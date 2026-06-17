@@ -137,72 +137,90 @@
     </tbody>
   </table>
 
-  <script>
-const form = document.getElementById("assetForm");
-const tableBody = document.getElementById("assetTableBody");
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-let assets = JSON.parse(localStorage.getItem("assets")) || [];
-
-function saveAssets() {
-  localStorage.setItem("assets", JSON.stringify(assets));
-}
-
-function renderTable() {
-  tableBody.innerHTML = "";
-
-  assets.forEach(function(asset, index) {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${asset.name}</td>
-      <td>${asset.category}</td>
-      <td>${asset.room}</td>
-      <td>${asset.purchaseDate}</td>
-      <td>${asset.price}</td>
-      <td>${asset.warrantyExpiry}</td>
-      <td>${asset.notes}</td>
-      <td><button class="delete-btn" onclick="deleteAsset(${index})">Delete</button></td>
-    `;
-    tableBody.appendChild(row);
-  });
-}
-
-function deleteAsset(index) {
-  assets.splice(index, 1);   // remove 1 item at position "index"
-  saveAssets();
-  renderTable();
-}
-
-function deleteAsset(index) {
-  const asset = assets[index];
-  const confirmed = confirm(`Are you sure you want to delete "${asset.name}"?`);
-
-  if (confirmed) {
-    assets.splice(index, 1);
-    saveAssets();
-    renderTable();
-  }
-}
-
-form.addEventListener("submit", function(event) {
-  event.preventDefault();
-
-  const newAsset = {
-    name: document.getElementById("name").value,
-    category: document.getElementById("category").value,
-    room: document.getElementById("room").value,
-    purchaseDate: document.getElementById("purchaseDate").value,
-    price: document.getElementById("price").value,
-    warrantyExpiry: document.getElementById("warrantyExpiry").value,
-    notes: document.getElementById("notes").value
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5nS-kYROUSGCSkFMEeUVYYZOG4rdWKzA",
+    authDomain: "home-asset-manager-22b72.firebaseapp.com",
+    projectId: "home-asset-manager-22b72",
+    storageBucket: "home-asset-manager-22b72.firebasestorage.app",
+    messagingSenderId: "397093743507",
+    appId: "1:397093743507:web:cb45790488075905f15666"
   };
 
-  assets.push(newAsset);
-  saveAssets();
-  renderTable();
-  form.reset();
-});
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const assetsCollection = collection(db, "assets");
 
-renderTable();
-  </script>
+  const form = document.getElementById("assetForm");
+  const tableBody = document.getElementById("assetTableBody");
+
+  let assets = [];
+
+  async function loadAssets() {
+    const snapshot = await getDocs(assetsCollection);
+    assets = snapshot.docs.map(function(docSnap) {
+      return { id: docSnap.id, ...docSnap.data() };
+    });
+    renderTable();
+  }
+
+  function renderTable() {
+    tableBody.innerHTML = "";
+    assets.forEach(function(asset) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${asset.name}</td>
+        <td>${asset.category}</td>
+        <td>${asset.room}</td>
+        <td>${asset.purchaseDate}</td>
+        <td>${asset.price}</td>
+        <td>${asset.warrantyExpiry}</td>
+        <td>${asset.notes}</td>
+        <td><button class="delete-btn" onclick="deleteAsset('${asset.id}')">Delete</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  async function deleteAsset(id) {
+    const asset = assets.find(function(a) { return a.id === id; });
+    const confirmed = confirm(`Are you sure you want to delete "${asset.name}"?`);
+    if (confirmed) {
+      await deleteDoc(doc(db, "assets", id));
+      await loadAssets();
+    }
+  }
+  window.deleteAsset = deleteAsset;
+
+  form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const newAsset = {
+      name: document.getElementById("name").value,
+      category: document.getElementById("category").value,
+      room: document.getElementById("room").value,
+      purchaseDate: document.getElementById("purchaseDate").value,
+      price: document.getElementById("price").value,
+      warrantyExpiry: document.getElementById("warrantyExpiry").value,
+      notes: document.getElementById("notes").value
+    };
+
+    await addDoc(assetsCollection, newAsset);
+    await loadAssets();
+    form.reset();
+  });
+
+  loadAssets();
+</script>
 </body>
 </html>
