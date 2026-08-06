@@ -1,0 +1,62 @@
+import logging
+import random
+import time
+
+from flask import Flask, jsonify
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+
+from otel_setup import setup_telemetry
+
+app = Flask(__name__)
+tracer = setup_telemetry("service-a", flask_app=app)
+logger = logging.getLogger("service-a")
+
+REQUEST_COUNT = Counter(
+    "service_a_requests_total", "Total requests received", ["endpoint", "http_status"]
+)
+REQUEST_LATENCY = Histogram(
+    "service_a_request_latency_seconds", "Request latency in seconds", ["endpoint"]
+)
+
+
+@app.route("/")
+def home():
+    start = time.time()
+    payload = {"service": "service-a", "message": "hello from service A"}
+    REQUEST_LATENCY.labels(endpoint="/").observe(time.time() - start)
+    REQUEST_COUNT.labels(endpoint="/", http_status=200).inc()
+    return jsonify(payload)
+
+
+@app.route("/work")
+def work():
+    # simulate variable work so latency/error metrics look interesting
+    start = time.time()
+    time.sleep(random.uniform(0.05, 0.4))
+    status = 200
+    if random.random() < 0.1:
+        status = 500
+
+    REQUEST_LATENCY.labels(endpoint="/work").observe(time.time() - start)
+    REQUEST_COUNT.labels(endpoint="/work", http_status=status).inc()
+
+    if status == 500:
+        logger.warning("work failed (simulated), duration=%.3fs", time.time() - start)
+        return jsonify({"error": "simulated failure"}), 500
+
+    logger.info("work completed, duration=%.3fs", time.time() - start)
+    return jsonify({"service": "service-a", "result": "work done"})
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+@app.route("/metrics")
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)

@@ -1,0 +1,65 @@
+{
+  "title": "Microservices Overview",
+  "uid": "microservices-overview",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Request Rate by Service (req/s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(service_a_requests_total[1m])) by (endpoint)",
+          "legendFormat": "service-a {{endpoint}}"
+        },
+        {
+          "expr": "sum(rate(service_b_requests_total[1m])) by (endpoint)",
+          "legendFormat": "service-b {{endpoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 Latency (seconds)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(service_a_request_latency_seconds_bucket[5m])) by (le, endpoint))",
+          "legendFormat": "service-a {{endpoint}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(service_b_request_latency_seconds_bucket[5m])) by (le, endpoint))",
+          "legendFormat": "service-b {{endpoint}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rate (5xx) by Service",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(service_a_requests_total{http_status=~\"5..\"}[1m]))",
+          "legendFormat": "service-a errors"
+        },
+        {
+          "expr": "sum(rate(service_b_requests_total{http_status=~\"5..\"}[1m]))",
+          "legendFormat": "service-b errors"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Downstream Errors (service-b -> service-a)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(service_b_downstream_errors_total)"
+        }
+      ]
+    }
+  ]
+}

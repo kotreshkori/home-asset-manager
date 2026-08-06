@@ -1,0 +1,32 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "service-a"
+    static_configs:
+      - targets: ["service-a:5000"]
+        labels:
+          service: "service-a"
+
+  - job_name: "service-b"
+    static_configs:
+      - targets: ["service-b:5000"]
+        labels:
+          service: "service-b"
+
+  - job_name: "llm-service"
+    static_configs:
+      - targets: ["llm-service:5000"]
+        labels:
+          service: "llm-service"
+
+  - job_name: "ai-analyst"
+    static_configs:
+      - targets: ["ai-analyst:5000"]
+        labels:
+          service: "ai-analyst"
