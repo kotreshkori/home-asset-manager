@@ -134,6 +134,18 @@ services:
     networks:
       - monitoring
 
+  portal:
+    build: ./portal
+    container_name: idp-portal
+    volumes:
+      - ./services.yaml:/app/services.yaml:ro
+    environment:
+      - CATALOG_PATH=/app/services.yaml
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
+
 networks:
   monitoring:
     driver: bridge

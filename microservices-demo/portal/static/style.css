@@ -1,0 +1,236 @@
+/* ---------------------------------------------------------------------
+   Design tokens
+   Palette is deliberately dark-navy, not near-black — this is an
+   always-on console, not a landing page. Three status colors (green /
+   amber / red) are reserved for real signal (tier + budget state) and
+   never used decoratively. Monospace carries identifiers and numbers
+   (service names, ports, percentages) because alignment and scanability
+   matter more than warmth for this kind of reference surface.
+--------------------------------------------------------------------- */
+:root {
+  --bg: #0A0E14;
+  --surface: #121826;
+  --surface-hover: #161F30;
+  --border: #232D3D;
+  --text: #D8DEE9;
+  --text-dim: #7C8798;
+  --status-good: #4ADE80;
+  --status-warn: #F5A623;
+  --status-crit: #F16565;
+  --status-neutral: #3D4A5C;
+  --accent: #5EC8D8;
+
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(94,200,216,0.04), transparent 320px);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); }
+
+/* ---------------- Topbar ---------------- */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 14, 20, 0.9);
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+.topbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--status-good);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+  flex-shrink: 0;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.tier-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.tier-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.tier-btn:hover { color: var(--text); border-color: var(--accent); }
+.tier-btn.active {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.tier-btn:focus-visible, .link-btn:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------- Grid ---------------- */
+.grid-wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.card:hover { border-color: var(--accent); }
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.svc-name {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.tier-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.tier-tier-1 { color: var(--status-crit); background: rgba(241, 101, 101, 0.1); border-color: rgba(241, 101, 101, 0.3); }
+.tier-tier-2 { color: var(--status-warn); background: rgba(245, 166, 35, 0.1); border-color: rgba(245, 166, 35, 0.3); }
+.tier-tier-3 { color: var(--text-dim); background: rgba(124, 135, 152, 0.1); border-color: rgba(124, 135, 152, 0.3); }
+
+.svc-desc {
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.meta-row {
+  display: flex;
+  gap: 18px;
+  margin: 0 0 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.meta-row dt {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0;
+}
+.meta-row dd {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  margin: 2px 0 0;
+}
+
+.budget-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--status-neutral);
+}
+.status-dot.tracked { background: var(--status-good); }
+.status-dot.untracked { background: var(--status-neutral); }
+@media (prefers-reduced-motion: no-preference) {
+  .status-dot.tracked { animation: pulse 2.4s ease-in-out infinite; }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(74, 222, 128, 0); }
+}
+
+.slo-line { font-size: 11.5px; margin: 0 0 14px; }
+.dim { color: var(--text-dim); }
+
+.link-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.link-btn {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.link-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------- Empty state ---------------- */
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 48px 24px;
+  text-align: center;
+}
+.empty-title { font-weight: 600; margin: 0 0 6px; }
+.empty-body { color: var(--text-dim); font-size: 13.5px; margin: 0; }
+.empty-body code {
+  font-family: var(--font-mono);
+  background: var(--surface);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .topbar-inner { flex-direction: column; align-items: flex-start; }
+}

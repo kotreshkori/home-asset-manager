@@ -1,0 +1,84 @@
+# services.yaml — the service catalog's source of truth.
+#
+# Every service in the platform has exactly one entry here. The golden-path
+# scaffolder appends new entries automatically; the portal reads this file
+# to render the catalog UI and to look up dashboard/trace/log links.
+#
+# These four entries mirror the real services in microservices-demo
+# (service-a, service-b, llm-service, ai-analyst) — names, ports, and
+# descriptions pulled directly from that project's docker-compose.yml,
+# app.py route definitions, and README.
+#
+# owner        - team or individual accountable for the service
+# repo         - source location (path relative to the microservices-demo root)
+# language     - primary language/framework
+# port         - HOST port (as mapped in docker-compose.yml, e.g. "5001:5000")
+# tier         - criticality: tier-1 (customer-facing/revenue), tier-2, tier-3
+# description  - one line, plain language, what this service does
+# links        - deep links into the observability stack for this service
+# slo          - target and window used by the SLO/error-budget layer
+
+services:
+  - name: service-a
+    owner: platform-team
+    repo: ./service-a
+    language: python-flask
+    port: 5001
+    tier: tier-1
+    description: Standalone service with a /work endpoint — simulated latency and ~10% error rate, used as the upstream call in the service-b -> service-a -> llm-service trace chain.
+    links:
+      dashboard: http://localhost:3000/d/microservices-overview
+      traces: http://localhost:3000/explore
+      logs: http://localhost:3000/explore
+    slo:
+      sli: success_rate
+      target: 99.0
+      window_days: 30
+
+  - name: service-b
+    owner: platform-team
+    repo: ./service-b
+    language: python-flask
+    port: 5002
+    tier: tier-1
+    description: Calls service-a via /call-a; /summarize chains service-a's result into llm-service for a plain-English explanation — the 3-hop trace demo.
+    links:
+      dashboard: http://localhost:3000/d/microservices-overview
+      traces: http://localhost:3000/explore
+      logs: http://localhost:3000/explore
+    slo:
+      sli: success_rate
+      target: 99.0
+      window_days: 30
+
+  - name: llm-service
+    owner: platform-team
+    repo: ./llm-service
+    language: python-flask
+    port: 5003
+    tier: tier-2
+    description: Calls Anthropic's Claude API via /ask, traced with OpenTelemetry GenAI conventions (model, token counts, latency) and its own Prometheus metrics.
+    links:
+      dashboard: http://localhost:3000/d/microservices-overview
+      traces: http://localhost:3000/explore
+      logs: http://localhost:3000/explore
+    slo:
+      sli: success_rate
+      target: 99.0
+      window_days: 30
+
+  - name: ai-analyst
+    owner: platform-team
+    repo: ./ai-analyst
+    language: python-flask
+    port: 5004
+    tier: tier-3
+    description: Runs in the background, periodically pulls metrics from Prometheus and warn/error logs from Loki, asks Claude to assess system health, and serves the verdict at / and /insights.
+    links:
+      dashboard: http://localhost:3000/d/microservices-overview
+      traces: http://localhost:3000/explore
+      logs: http://localhost:3000/explore
+    slo:
+      sli: success_rate
+      target: 99.0
+      window_days: 30

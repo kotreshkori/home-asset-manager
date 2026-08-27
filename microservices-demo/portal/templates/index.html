@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Catalog — IDP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>Service Catalog</h1>
+        <p class="subtitle">{{ services|length }} services registered · golden path wires new ones in automatically</p>
+      </div>
+    </div>
+    <nav class="tier-filters" aria-label="Filter by tier">
+      <button class="tier-btn active" data-tier="all">All</button>
+      {% for tier in tiers %}
+      <button class="tier-btn" data-tier="{{ tier }}">{{ tier }}</button>
+      {% endfor %}
+    </nav>
+  </div>
+</header>
+
+<main class="grid-wrap">
+  {% if not services %}
+  <div class="empty-state">
+    <p class="empty-title">No services registered yet.</p>
+    <p class="empty-body">Add an entry to <code>services.yaml</code>, or run the golden-path scaffolder to generate one — it registers itself here automatically.</p>
+  </div>
+  {% else %}
+  <div class="card-grid">
+    {% for s in services %}
+    <article class="card" data-tier="{{ s.tier }}">
+      <div class="card-head">
+        <h2 class="svc-name">{{ s.name }}</h2>
+        <span class="tier-badge tier-{{ s.tier }}">{{ s.tier }}</span>
+      </div>
+
+      <p class="svc-desc">{{ s.description }}</p>
+
+      <dl class="meta-row">
+        <div><dt>owner</dt><dd>{{ s.owner }}</dd></div>
+        <div><dt>lang</dt><dd>{{ s.language }}</dd></div>
+        <div><dt>port</dt><dd>{{ s.port }}</dd></div>
+      </dl>
+
+      <div class="budget-row">
+        <span class="status-dot {{ 'tracked' if s.budget_remaining_pct is not none else 'untracked' }}" aria-hidden="true"></span>
+        {% if s.budget_remaining_pct is not none %}
+          <span>error budget: <strong>{{ s.budget_remaining_pct }}%</strong> remaining</span>
+        {% else %}
+          <span class="dim">error budget: not tracked yet</span>
+        {% endif %}
+      </div>
+
+      {% if s.slo %}
+      <p class="slo-line dim">SLO target: {{ s.slo.target }}% {{ s.slo.sli }} / {{ s.slo.window_days }}d window</p>
+      {% endif %}
+
+      <div class="link-row">
+        <a href="{{ s.links.dashboard }}" target="_blank" rel="noopener" class="link-btn">Dashboard</a>
+        <a href="{{ s.links.traces }}" target="_blank" rel="noopener" class="link-btn">Traces</a>
+        <a href="{{ s.links.logs }}" target="_blank" rel="noopener" class="link-btn">Logs</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</main>
+
+<script>
+  const buttons = document.querySelectorAll('.tier-btn');
+  const cards = document.querySelectorAll('.card');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tier = btn.dataset.tier;
+      cards.forEach(card => {
+        card.style.display = (tier === 'all' || card.dataset.tier === tier) ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
