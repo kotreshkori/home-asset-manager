@@ -82,3 +82,19 @@ services:
       sli: success_rate
       target: 99.0
       window_days: 30
+
+  - name: order-service
+    owner: platform-team
+    repo: ./order-service
+    language: python-flask
+    port: 5005
+    tier: tier-2
+    description: Handles order lifecycle and status transitions.
+    links:
+      dashboard: http://localhost:3000/d/microservices-overview
+      traces: http://localhost:3000/explore
+      logs: http://localhost:3000/explore
+    slo:
+      sli: success_rate
+      target: 99.0
+      window_days: 30

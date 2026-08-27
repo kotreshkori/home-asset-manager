@@ -30,3 +30,9 @@ scrape_configs:
       - targets: ["ai-analyst:5000"]
         labels:
           service: "ai-analyst"
+
+  - job_name: "order-service"
+    static_configs:
+      - targets: ["order-service:5000"]
+        labels:
+          service: "order-service"

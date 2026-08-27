@@ -146,6 +146,18 @@ services:
     networks:
       - monitoring
 
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      - OTEL_COLLECTOR_ENDPOINT=http://otel-collector:4317
+    ports:
+      - "5005:5000"
+    depends_on:
+      - otel-collector
+    networks:
+      - monitoring
+
 networks:
   monitoring:
     driver: bridge
